@@ -1,0 +1,28 @@
+{
+  "name": "communication-core-platform",
+  "version": "1.0.0",
+  "description": "Multi-tenant communication platform for WhatsApp integration",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "ts-node src/server.ts",
+    "worker": "ts-node src/workers/messageWorker.ts"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "@supabase/supabase-js": "^2.38.4",
+    "bullmq": "^4.15.0",
+    "ioredis": "^5.3.2",
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "@types/node": "^20.10.0",
+    "@types/express": "^4.17.21",
+    "ts-node": "^10.9.1",
+    "nodemon": "^3.0.2"
+  }
+}
