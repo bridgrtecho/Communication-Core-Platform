@@ -32,6 +32,42 @@ Headers: Authorization: <apiKey>
 
 Body: { "channel": "whatsapp", "to": "91XXXXXXXXXX", "message": "Hello" }
 
+## Project Onboarding API
+
+POST /api/v1/projects
+
+Body:
+{
+  "projectName": "string",
+  "callbackUrl": "string",
+  "wabaNumber": "string",
+  "phoneNumberId": "string",
+  "accessToken": "string"
+}
+
+Response:
+{
+  "projectId": "...",
+  "apiKey": "..."
+}
+
+GET /api/v1/projects/:id
+
+Headers: Authorization: <apiKey>
+
+PUT /api/v1/projects/:id
+
+Headers: Authorization: <apiKey>
+
+Body (any of):
+{
+  "projectName": "string",
+  "callbackUrl": "string",
+  "wabaNumber": "string",
+  "phoneNumberId": "string",
+  "accessToken": "string"
+}
+
 ## Webhook
 
 POST /webhook/whatsapp

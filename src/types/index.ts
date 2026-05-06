@@ -1,8 +1,11 @@
 export interface Project {
   id: string;
   project_id: string;
+  project_name: string;
   api_key: string;
   waba_number: string;
+  phone_number_id: string;
+  access_token: string;
   callback_url: string;
   created_at: string;
 }
