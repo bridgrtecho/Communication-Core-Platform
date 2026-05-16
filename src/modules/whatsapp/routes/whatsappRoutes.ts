@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import { handleWebhook } from '../webhook/webhookHandler';
+import { handleWebhook, verifyWebhook } from '../webhook/webhookHandler';
 
 const router = Router();
 
-router.post('/webhook', handleWebhook);
+router.get('/', verifyWebhook);
+router.post('/', handleWebhook);
 
 export default router;

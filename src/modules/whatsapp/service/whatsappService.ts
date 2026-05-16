@@ -1,23 +1,27 @@
 import axios from 'axios';
 import { logger } from '../../../core/logger';
+import { ProjectWhatsAppCredentials } from '../../project/service/projectService';
 
-const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN!;
-const WHATSAPP_PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID!;
+export const sendWhatsAppMessage = async (
+  to: string,
+  message: string,
+  credentials: ProjectWhatsAppCredentials,
+) => {
+  const { project_id: projectId, phone_number_id: phoneNumberId, access_token: accessToken } = credentials;
 
-export const sendWhatsAppMessage = async (to: string, message: string, projectConfig: any) => {
-  logger.info(`Sending WhatsApp message to ${to}: ${message}`);
+  logger.info(`Sending WhatsApp message for project ${projectId} to ${to}`);
 
   try {
-    const url = `https://graph.facebook.com/v18.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`;
+    const url = `https://graph.facebook.com/v18.0/${phoneNumberId}/messages`;
 
     const headers = {
-      'Authorization': `Bearer ${WHATSAPP_ACCESS_TOKEN}`,
+      Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
     };
 
     const body = {
       messaging_product: 'whatsapp',
-      to: to,
+      to,
       type: 'text',
       text: {
         body: message,
@@ -26,19 +30,15 @@ export const sendWhatsAppMessage = async (to: string, message: string, projectCo
 
     const response = await axios.post(url, body, { headers });
 
-    logger.info(`WhatsApp API response: ${JSON.stringify(response.data)}`);
-
-    // Optionally, update message status in DB here
-    // For now, just log success
-
-  } catch (error: any) {
-    logger.error(`WhatsApp API error: ${error.response?.data || error.message}`);
-    throw error; // Re-throw to let worker handle retry
+    logger.info(`WhatsApp API response for project ${projectId}: ${JSON.stringify(response.data)}`);
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: unknown }; message?: string };
+    logger.error(`WhatsApp API error for project ${projectId}: ${JSON.stringify(err.response?.data) || err.message}`);
+    throw error;
   }
 };
 
 export const callAIService = async (inputMessage: string) => {
   logger.info(`Calling AI service with: ${inputMessage}`);
-  // Placeholder for future Python FastAPI service
   return 'AI response placeholder';
 };

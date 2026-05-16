@@ -11,11 +11,21 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(express.json());
+const whatsappWebhookPaths = ['/webhook/whatsapp', '/api/whatsapp/webhook'];
 
-// Routes
+app.use(express.json({
+  verify: (req, _res, buf) => {
+    const path = req.url?.split('?')[0] ?? '';
+    if (whatsappWebhookPaths.some((webhookPath) => path.startsWith(webhookPath))) {
+      (req as express.Request).rawBody = buf;
+    }
+  },
+}));
+
 app.post('/send-notification', authMiddleware, sendNotification);
-app.use('/webhook/whatsapp', whatsappRoutes);
+for (const webhookPath of whatsappWebhookPaths) {
+  app.use(webhookPath, whatsappRoutes);
+}
 app.use('/api/v1/projects', projectRoutes);
 
 app.listen(port, () => {

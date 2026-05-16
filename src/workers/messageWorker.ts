@@ -2,11 +2,11 @@ import { Worker } from 'bullmq';
 import dotenv from 'dotenv';
 dotenv.config();
 import { sendWhatsAppMessage } from '../modules/whatsapp/service/whatsappService';
+import { fetchProjectWhatsAppCredentials } from '../modules/project/service/projectService';
 import { logger } from '../core/logger';
 import { QueueJob } from '../types';
 import { supabase } from '../core/config/supabase';
-
-const redisUrl = process.env.REDIS_URL!;
+import { redisConnection } from '../core/config/redis';
 
 const worker = new Worker('messages', async (job) => {
   const { id, projectId, channel, to, message }: QueueJob = job.data;
@@ -15,7 +15,11 @@ const worker = new Worker('messages', async (job) => {
 
   try {
     if (channel === 'whatsapp') {
-      await sendWhatsAppMessage(to, message, { projectId });
+      const credentials = await fetchProjectWhatsAppCredentials(projectId);
+      if (!credentials) {
+        throw new Error(`WhatsApp credentials not found for project ${projectId}`);
+      }
+      await sendWhatsAppMessage(to, message, credentials);
     } else {
       logger.error(`Unknown channel: ${channel}`);
     }
@@ -24,7 +28,7 @@ const worker = new Worker('messages', async (job) => {
     throw error;
   }
 }, {
-  connection: redisUrl,
+  connection: redisConnection,
 });
 
 worker.on('completed', async (job) => {
@@ -35,6 +39,7 @@ worker.on('completed', async (job) => {
 
 worker.on('failed', async (job, err) => {
   logger.error(`Job ${job?.id} failed: ${err.message}`);
+  if (!job) return;
   const { id } = job.data;
   await supabase.from('messages').update({ status: 'failed' }).eq('id', id);
 });

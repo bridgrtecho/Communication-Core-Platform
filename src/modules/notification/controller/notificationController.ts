@@ -1,9 +1,9 @@
+import crypto from 'crypto';
 import { Request, Response } from 'express';
 import { messageQueue } from '../../../queue';
 import { logger } from '../../../core/logger';
 import { QueueJob } from '../../../types';
 import { supabase } from '../../../core/config/supabase';
-import { v4 as uuidv4 } from 'uuid';
 
 export const sendNotification = async (req: Request, res: Response) => {
   const { channel, to, message } = req.body;
@@ -21,7 +21,7 @@ export const sendNotification = async (req: Request, res: Response) => {
   }
 
   try {
-    const messageId = uuidv4();
+    const messageId = crypto.randomUUID();
 
     // Insert message record
     const { error } = await supabase.from('messages').insert({
@@ -47,4 +47,4 @@ export const sendNotification = async (req: Request, res: Response) => {
     logger.error(`Queue error: ${error}`);
     res.status(500).json({ error: 'Failed to queue notification' });
   }
-};;
+};

@@ -100,3 +100,69 @@ export const updateProjectRecord = async (projectId: string, updates: UpdateProj
 
   return data as Omit<Project, 'access_token'>;
 };
+
+export interface ProjectWhatsAppCredentials {
+  project_id: string;
+  phone_number_id: string;
+  access_token: string;
+}
+
+export const fetchProjectWhatsAppCredentials = async (
+  projectId: string,
+): Promise<ProjectWhatsAppCredentials | null> => {
+  const { data, error } = await supabase
+    .from('projects')
+    .select('project_id, phone_number_id, access_token')
+    .eq('project_id', projectId)
+    .maybeSingle();
+
+  if (error) {
+    logger.error(`Fetch WhatsApp credentials failed: ${error.message}`);
+    throw error;
+  }
+
+  if (!data?.phone_number_id || !data?.access_token) {
+    return null;
+  }
+
+  return data as ProjectWhatsAppCredentials;
+};
+
+export interface ProjectWebhookTarget {
+  project_id: string;
+  callback_url: string;
+}
+
+export const findProjectByPhoneNumberId = async (
+  phoneNumberId: string,
+): Promise<ProjectWebhookTarget | null> => {
+  const { data, error } = await supabase
+    .from('projects')
+    .select('project_id, callback_url')
+    .eq('phone_number_id', phoneNumberId)
+    .maybeSingle();
+
+  if (error) {
+    logger.error(`Project lookup by phone_number_id failed: ${error.message}`);
+    throw error;
+  }
+
+  return data as ProjectWebhookTarget | null;
+};
+
+export const findProjectByWabaNumber = async (
+  wabaNumber: string,
+): Promise<ProjectWebhookTarget | null> => {
+  const { data, error } = await supabase
+    .from('projects')
+    .select('project_id, callback_url')
+    .eq('waba_number', wabaNumber)
+    .maybeSingle();
+
+  if (error) {
+    logger.error(`Project lookup by waba_number failed: ${error.message}`);
+    throw error;
+  }
+
+  return data as ProjectWebhookTarget | null;
+};

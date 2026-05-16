@@ -11,6 +11,8 @@ This is a multi-tenant communication platform for WhatsApp messaging integration
    - SUPABASE_ANON_KEY=your_supabase_anon_key
    - REDIS_URL=redis://localhost:6379
    - PORT=3000
+   - WHATSAPP_WEBHOOK_VERIFY_TOKEN=your_meta_webhook_verify_token
+   - WHATSAPP_APP_SECRET=your_meta_app_secret (optional, enables signature verification)
 
 3. Create Supabase tables:
    - projects: id (uuid), project_id (text), api_key (text), waba_number (text), callback_url (text), created_at (timestamp)
@@ -68,11 +70,21 @@ Body (any of):
   "accessToken": "string"
 }
 
-## Webhook
+## Webhook (Meta WhatsApp)
+
+Configure Meta callback URL: `https://your-domain/webhook/whatsapp`
+
+For testing, this alias also works: `https://your-domain/api/whatsapp/webhook`
+
+GET /webhook/whatsapp
+
+Meta verification handshake. Uses `WHATSAPP_WEBHOOK_VERIFY_TOKEN` to validate `hub.verify_token` and returns `hub.challenge`.
 
 POST /webhook/whatsapp
 
-Forwards to the project's callback_url based on waba_number.
+Receives Meta `whatsapp_business_account` payloads, resolves the tenant by `metadata.phone_number_id` (fallback: `metadata.display_phone_number` matched to `waba_number`), and forwards the original payload to that project's `callback_url`.
+
+If `WHATSAPP_APP_SECRET` is set, requests must include a valid `X-Hub-Signature-256` header.
 
 ## Sample Curl
 
